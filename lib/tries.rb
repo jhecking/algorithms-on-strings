@@ -30,18 +30,17 @@ class Trie
   def add(pattern)
     curr = root
     pattern.each_char do |c|
-      if curr.has_edge?(c)
-        curr = curr.edges[c]
-      else
+      if !curr.has_edge?(c)
         @index += 1
-        curr = curr.edges[c] = Node.new(index, {})
+        curr.edges[c] = Node.new(index, {})
       end
+      curr = curr.edges[c]
     end
   end
 
-  def match_prefix(text)
-    chars = text.each_char
-    s = chars.next
+  def match_prefix(chars)
+    chars = chars.clone
+    s = chars.shift
     v = root
     path = []
     loop do
@@ -50,7 +49,7 @@ class Trie
       elsif v.has_edge?(s)
         path << s
         v = v.edges[s]
-        s = chars.next
+        s = chars.shift
       else
         return
       end
@@ -59,9 +58,11 @@ class Trie
 
   def match(text)
     matches = []
+    chars = text.chars
     0.upto(text.length - 1) do |i|
-      m = match_prefix(text[i..-1])
+      m = match_prefix(chars)
       matches << [i, m] if m
+      chars.shift
     end
     matches
   end
@@ -82,6 +83,18 @@ class Trie
 
 end
 
+profile = false
+ARGV.each do |arg|
+  case arg
+  when '-p', '--prof' then profile = true
+  end
+end
+
+if profile
+  require 'ruby-prof'
+  RubyProf.start
+end
+
 case File.basename($0, '.*')
 when 'trie'
   trie = Trie.load(STDIN)
@@ -93,4 +106,9 @@ when 'trie_matching'
   trie = Trie.load(STDIN)
   matches = trie.match(text)
   puts matches.map(&:first).join(' ')
+end
+
+if profile
+  profile = RubyProf.stop
+  RubyProf::FlatPrinter.new(profile).print(STDOUT)
 end
