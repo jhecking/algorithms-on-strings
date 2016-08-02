@@ -4,9 +4,12 @@ class Trie
   attr_reader :root
   attr_reader :index
 
-  Node = Struct.new(:index, :edges) do
+  Node = Struct.new(:index, :edges, :pattern_end) do
     def has_edge?(e)
       edges.has_key?(e)
+    end
+    def pattern_end?
+      !!pattern_end
     end
     def leaf?
       edges.empty?
@@ -36,6 +39,7 @@ class Trie
       end
       curr = curr.edges[c]
     end
+    curr.pattern_end = true
   end
 
   def match_prefix(chars)
@@ -44,7 +48,7 @@ class Trie
     v = root
     path = []
     loop do
-      if v.leaf?
+      if v.pattern_end?
         return path.join
       elsif v.has_edge?(s)
         path << s
@@ -101,7 +105,7 @@ when 'trie'
   trie.adjacencies.each do |edge|
     printf "%s->%s:%s\n", *edge
   end
-when 'trie_matching'
+when 'trie_matching', 'trie_matching_extended'
   text = STDIN.readline
   trie = Trie.load(STDIN)
   matches = trie.match(text)
