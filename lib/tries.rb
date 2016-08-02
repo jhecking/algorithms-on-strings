@@ -42,6 +42,32 @@ class Trie
     curr.pattern_end = true
   end
 
+  def visit
+    return enum_for(:visit) if !block_given?
+    yield curr = root
+    stack = []
+    while curr
+      curr.edges.each do |_, child|
+        yield child
+        stack << child
+      end
+      curr = stack.pop
+    end
+  end
+
+  def match(text)
+    matches = []
+    chars = text.chars
+    0.upto(text.length - 1) do |i|
+      m = match_prefix(chars)
+      matches << [i, m] if m
+      chars.shift
+    end
+    matches
+  end
+
+  private
+
   def match_prefix(chars)
     chars = chars.clone
     s = chars.shift
@@ -59,32 +85,16 @@ class Trie
       end
     end
   end
+end
 
-  def match(text)
-    matches = []
-    chars = text.chars
-    0.upto(text.length - 1) do |i|
-      m = match_prefix(chars)
-      matches << [i, m] if m
-      chars.shift
+def adjacencies(trie)
+  adj = []
+  trie.visit do |node|
+    node.edges.each do |label, child|
+      adj << [node.index, child.index, label]
     end
-    matches
   end
-
-  def adjacencies
-    adj = []
-    stack = []
-    curr = root
-    while curr
-      curr.edges.each do |label, child|
-        adj << [curr.index, child.index, label]
-        stack << child
-      end
-      curr = stack.pop
-    end
-    adj
-  end
-
+  adj
 end
 
 profile = false
@@ -102,7 +112,7 @@ end
 case File.basename($0, '.*')
 when 'trie'
   trie = Trie.load(STDIN)
-  trie.adjacencies.each do |edge|
+  adjacencies(trie).each do |edge|
     printf "%s->%s:%s\n", *edge
   end
 when 'trie_matching', 'trie_matching_extended'
