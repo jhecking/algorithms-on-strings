@@ -32,6 +32,10 @@ class SuffixTree
     visit(node.child, &block) if node.child
   end
 
+  def expand(node)
+    text[node.begin..node.end]
+  end
+
   private
 
   def suffixes(text)
@@ -56,21 +60,19 @@ class SuffixTree
         if common == node.len && node.child
           suffix.begin += common
           insert_child(node.child, suffix)
-          return
         else
-          orig_end = node.end
+          node.child = Node.new(node.begin + common, node.end, nil, node.child)
           node.end = node.begin + common - 1
-          node.child = Node.new(node.begin + common, orig_end, nil, node.child)
           if (suffix.len > common)
             suffix.begin += common
             node.child.next = suffix
           end
-          return
         end
+        break
       else
         if node.next.nil?
           node.next = suffix
-          return
+          break
         end
         node = node.next
       end
@@ -85,10 +87,6 @@ class SuffixTree
     end
     idx = -1 unless idx > 0
     return idx
-  end
-
-  def expand(node)
-    text[node.begin..node.end]
   end
 
 end
@@ -110,7 +108,7 @@ when 'suffix_tree'
   text = STDIN.readline.chop
   tree = SuffixTree.new(text)
   tree.visit do |node|
-    puts text[node.begin..node.end]
+    puts tree.expand(node)
   end
 end
 
