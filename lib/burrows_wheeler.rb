@@ -1,12 +1,7 @@
 #!/usr/bin/env ruby -w
-#
-module Enumerable
-  def stable_sort_by
-    sort_by.with_index { |x, idx| [yield(x), idx] }
-  end
-end
 
 class String
+
   def burrows_wheeler_transformation
     chars = self.chars
     matrix = []
@@ -14,10 +9,26 @@ class String
       matrix << chars
       chars = chars.rotate(-1)
     end
-    matrix = matrix.stable_sort_by(&:join)
+    matrix = matrix.sort_by(&:join)
     matrix.map(&:last).join
   end
   alias_method :bwt, :burrows_wheeler_transformation
+
+  def burrows_wheeler_inverse
+    last = self.chars.each_with_index.to_a
+    first = last.sort
+    last = last.map{|t| t.join("\0")}
+    first = first.map{|t| t.join("\0")}
+    inverse = []
+    idx = 0
+    length.times do
+      inverse << first[idx]
+      c = last[idx]
+      idx = first.index(c)
+    end
+    inverse.reverse.map{|t| t.split("\0").first}.join
+  end
+  alias_method :bwtinverse, :burrows_wheeler_inverse
 end
 
 profile = false
@@ -36,6 +47,9 @@ case File.basename($0, '.*')
 when 'bwt'
   text = STDIN.readline.chop
   puts text.bwt
+when 'bwtinverse'
+  text = STDIN.readline.chop
+  puts text.bwtinverse
 end
 
 if profile
