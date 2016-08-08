@@ -15,20 +15,22 @@ class String
   alias_method :bwt, :burrows_wheeler_transformation
 
   def burrows_wheeler_inverse
-    last = self.chars.each_with_index.to_a
-    first = last.sort
-    last = last.map{|t| t.join("\0")}
-    first = first.map{|t| t.join("\0")}
-    inverse = []
+    chars = self.chars
+    rank = Hash.new(0)
+    last = chars.map {|c| r = rank[c]; rank[c] += 1; [c, r]}
+    i = 0
+    index = rank.sort.inject({}){|hsh, (c, cnt)| hsh[c] = i; i+=cnt; hsh}
+    inverse = ["$"]
     idx = 0
-    length.times do
-      inverse << first[idx]
+    (length-1).times do
       c = last[idx]
-      idx = first.index(c)
+      inverse << c.first
+      idx = index[c.first] + c.last
     end
-    inverse.reverse.map{|t| t.split("\0").first}.join
+    inverse.reverse.join
   end
   alias_method :bwtinverse, :burrows_wheeler_inverse
+
 end
 
 profile = false
