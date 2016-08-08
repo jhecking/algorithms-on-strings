@@ -5,13 +5,6 @@ class SuffixTree
     def len
       self.end - self.begin + 1
     end
-    def to_s
-      if self.begin
-        "([#{self.begin}..#{self.end}], next: #{self.next}, child: #{self.child})"
-      else
-        "(<root>, next: #{self.next}, child: #{self.child})"
-      end
-    end
   end
 
   attr_reader :text
