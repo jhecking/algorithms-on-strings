@@ -57,31 +57,30 @@ class SuffixTree
     while node
       common = common_prefix(node, suffix)
       if common > 0
-        if common == node.len && node.child
-          suffix.begin += common
-          insert_child(node.child, suffix)
+        suffix.begin += common
+        if common == node.len
+          # node is prefix - add suffix under existing node
+          add(node, suffix)
         else
-          node.child = Node.new(node.begin + common, node.end, nil, node.child)
+          # common prefix: add node & suffix under new prefix node
+          node.child = Node.new(node.begin + common, node.end, suffix, node.child)
           node.end = node.begin + common - 1
-          if (suffix.len > common)
-            suffix.begin += common
-            node.child.next = suffix
-          end
         end
         break
       else
         if node.next.nil?
+          # no matching prefix - add suffix as new child node
           node.next = suffix
           break
         end
-        node = node.next
       end
+      node = node.next
     end
   end
 
   def common_prefix(n1, n2)
     str1, str2 = expand(n1), expand(n2)
-    len = [str1, str2].map(&:length).max
+    len = [str1.length, str2.length].max
     idx = (0..len).each do |i|
       break i if str1[i] != str2[i]
     end
