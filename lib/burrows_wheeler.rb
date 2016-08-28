@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby -w
 
-class String
+module BurrowsWheeler
 
-  def burrows_wheeler_transformation
-    chars = self.chars
+  def self.burrows_wheeler_transformation(text)
+    chars = text.chars
     matrix = []
     length.times do 
       matrix << chars
@@ -14,8 +14,8 @@ class String
   end
   alias_method :bwt, :burrows_wheeler_transformation
 
-  def burrows_wheeler_inverse
-    chars = self.chars
+  def self.burrows_wheeler_inverse(bwt)
+    chars = bwt.chars
     rank = Hash.new(0)
     last = chars.map {|c| r = rank[c]; rank[c] += 1; [c, r]}
     i = 0
@@ -48,10 +48,10 @@ end
 case File.basename($0, '.*')
 when 'bwt'
   text = STDIN.readline.chop
-  puts text.bwt
+  puts BurrowsWheeler.bwt(text)
 when 'bwtinverse'
   text = STDIN.readline.chop
-  puts text.bwtinverse
+  puts BurrowsWheeler.bwtinverse(text)
 end
 
 if profile
