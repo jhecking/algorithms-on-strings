@@ -120,6 +120,32 @@ module SuffixArray
     return newKlass
   end
 
+  def self.match(s, p, order)
+    l = 0
+    r = s.length
+    while l < r
+      mid = (l + r) / 2
+      suffix = s[order[mid]..-1]
+      if p > suffix
+        l = mid + 1
+      else
+        r = mid
+      end
+    end
+    l1 = l
+    r = s.length
+    while l < r
+      mid = (l + r) / 2
+      suffix = s[order[mid]..-1]
+      if p < suffix
+        l = mid + 1
+      else
+        r = mid
+      end
+    end
+    return order[l1...r].select { |i| s[i..-1].start_with?(p) }
+  end
+
   def self.suffix_tree_from_suffix_array(s, order, lcp_array)
     len = s.length
     root = SuffixTreeNode.new(s:s)
@@ -229,6 +255,13 @@ when 'suffix_array'
   s = readline.chomp
   sarray = SuffixArray.build_suffix_array(s)
   puts sarray.join(' ')
+when 'suffix_array_matching'
+  s = readline.chomp + '$'
+  sarray = SuffixArray.build_suffix_array(s)
+  readline
+  pp = readline.chomp.split(' ')
+  matches = pp.flat_map { |p| SuffixArray.match(s, p, sarray) }
+  puts matches.join(' ')
 when 'suffix_tree_from_array'
   s = readline.chomp
   order = readline.chomp.split(' ').map(&:to_i)
